@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKMA Residential Mortgage Loans Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="myChart"></canvas>
+
+    <script>
+        async function fetchData() {
+            const response = await fetch('https://api.hkma.gov.hk/public/market-data-and-statistics/monthly-statistical-bulletin/banking/residential-mortgage-loans-neg-equity?offset=0');
+            const data = await response.json();
+            return data.result.records;
+        }
+
+        async function createChart() {
+            const records = await fetchData();
+            
+            const labels = records.map(record => record.end_of_quarter).reverse();
+            const outstandingLoans = records.map(record => record.outstanding_loans).reverse();
+            const outstandingLoansAmt = records.map(record => record.outstanding_loans_amt).reverse();
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Outstanding Loans',
+                            data: outstandingLoans,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Outstanding Loans Amount',
+                            data: outstandingLoansAmt,
+                            borderColor: 'rgb(255, 99, 132)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        createChart();
+    </script>
+</body>
+</html>
